@@ -1,0 +1,78 @@
+<h2>Productos en Tiempo Real</h2>
+
+<!-- Formulario para agregar productos -->
+<form id="productForm">
+  <div class="form-group">
+    <label for="title">Título:</label>
+    <input type="text" class="form-control" id="title" name="title" required>
+  </div>
+  <div class="form-group">
+    <label for="price">Precio:</label>
+    <input type="number" class="form-control" id="price" name="price" required>
+  </div>
+  <div class="form-group">
+    <label for="thumbnail">Thumbnail (URL):</label>
+    <input type="url" class="form-control" id="thumbnail" name="thumbnail" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Agregar Producto</button>
+</form>
+
+<!-- Lista de productos en tiempo real -->
+<table class="table table-sm table-hover">
+  <thead>
+    <tr>
+      <th scope="col">#ID</th>
+      <th scope="col">Nombre</th>
+      <th scope="col">Precio</th>
+      <th scope="col">Imagen</th>
+    </tr>
+  </thead>
+  <tbody id="productList">
+    <!-- Aquí se actualizará la lista de productos en tiempo real -->
+  </tbody>
+</table>
+
+<!-- Script para manejar eventos de formulario y websockets -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  // Manejar el evento de envío del formulario para agregar productos
+  const productForm = document.getElementById("productForm");
+  productForm.addEventListener("submit", (evt) => {
+    evt.preventDefault();
+    const title = document.getElementById("title").value;
+    const price = document.getElementById("price").value;
+    const thumbnail = document.getElementById("thumbnail").value;
+
+    // Enviar el nuevo producto al servidor a través de sockets
+    socket.emit("productoAgregado", { title, price, thumbnail });
+  });
+
+  // Escuchar la actualización de la lista de productos en tiempo real
+  socket.on("bienvenidoLista", (productos) => {
+  mostrarProductos(productos);
+});
+
+// Escuchar la actualización de la lista de productos en tiempo real
+socket.on("listaActualizada", (productos) => {
+  mostrarProductos(productos);
+});
+
+// Función para mostrar productos en la lista
+function mostrarProductos(productos) {
+  const productList = document.getElementById("productList");
+  productList.innerHTML = ""; // Limpiar la lista antes de actualizar
+
+  productos.forEach((producto) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${producto.id}</td>
+      <td>${producto.title}</td>
+      <td>${producto.price}</td>
+      <td>${producto.thumbnail}</td>
+    `;
+    productList.appendChild(row);
+  });
+  };
+</script>
